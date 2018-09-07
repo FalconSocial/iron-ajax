@@ -439,6 +439,23 @@ element.
      * @return {!IronRequestElement}
      */
     generateRequest: function() {
+      var sendRequest = function(request, requestOptions) {
+        request.send(requestOptions);
+
+        this._setLastRequest(request);
+        this._setLoading(true);
+
+        this.fire('request', {
+          request: request,
+          options: requestOptions
+        }, { bubbles: this.bubbles });
+
+        this.fire('iron-ajax-request', {
+          request: request,
+          options: requestOptions
+        }, { bubbles: this.bubbles });
+      }.bind(this);
+
       var request = /** @type {!IronRequestElement} */ (document.createElement('iron-request'));
       var requestOptions = this.toRequestOptions();
 
@@ -452,27 +469,17 @@ element.
         this._discardRequest.bind(this, request)
       );
 
-      // add Authorization header with the token from the falcon auth instance
-      if (window._falconAuth
-        && window._falconAuth.authenticated
-        && !requestOptions.headers.Authorization) {
-        requestOptions.headers.Authorization = 'Bearer ' + window._falconAuth.token;
+      var falconAuth = window._falconAuth;
+      if (falconAuth && falconAuth.authenticated && !requestOptions.headers.Authorization) {
+        falconAuth.updateToken(10)
+          .then(function() {
+            // add Authorization header with the token from the falcon auth instance
+            requestOptions.headers.Authorization = 'Bearer ' + falconAuth.token;
+            sendRequest(request, requestOptions);
+          });
+      } else {
+        sendRequest(request, requestOptions);
       }
-
-      request.send(requestOptions);
-
-      this._setLastRequest(request);
-      this._setLoading(true);
-
-      this.fire('request', {
-        request: request,
-        options: requestOptions
-      }, {bubbles: this.bubbles});
-
-      this.fire('iron-ajax-request', {
-        request: request,
-        options: requestOptions
-      }, {bubbles: this.bubbles});
 
       return request;
     },

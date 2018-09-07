@@ -16,6 +16,11 @@ thing! https://github.com/PolymerLabs/tedium/issues
 
 _[Demo and API docs](https://elements.polymer-project.org/elements/iron-ajax)_
 
+## Important notes
+This is a fork of [PolymerElements/iron-ajax](https://github.com/PolymerElements/iron-ajax). In the falcon app we use the 1.x version of Polymer and the 1.4.4 version of `iron-ajax` doesn't support request interceptors. Without an interceptor we would have to provide the bearer token in every `iron-ajax` request.
+
+The [v1.4.4-with-falcon-auth](https://github.com/FalconSocial/iron-ajax/tree/v1.4.4-with-falcon-auth) branch of this fork extends the default behavior and adds the Authorization header with the bearer token. It reads the token from the `_falconAuth` object that has to be registered on the global window object.
+
 ## Changes in 2.0
 
 *   Promise polyfill is now a dev dependency and no longer shipped with `iron-ajax`.
